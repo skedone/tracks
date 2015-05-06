@@ -31,7 +31,7 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $server = new Server();
+        $server = new \Tracks\Server();
         $server->run();
     }
 }
