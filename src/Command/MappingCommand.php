@@ -25,7 +25,7 @@ class MappingCommand extends Command {
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $storage = ClientBuilder::create()->setHosts(['127.0.0.1:9200'])->setRetries(1)->build();
-        $storage->indices()->delete(['index' => 'tracks']);
+        $storage->indices()->delete(['index' => 'tracking']);
         $storage->indices()->create($this->getMapping());
 
     }
@@ -33,7 +33,7 @@ class MappingCommand extends Command {
     private function getMapping()
     {
         return [
-            'index' => 'tracks',
+            'index' => 'tracking',
             'body' => [
                 'settings' => [
                     '_source' => array(

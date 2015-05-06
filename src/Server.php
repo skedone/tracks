@@ -53,19 +53,16 @@ class Server {
     {
         $response = \json_decode($this->provider->lPop('tracks'));
         if($response) {
-            $response->ts = new \DateTime($response->ts);
-            $response->ts = (string) $response->ts->format('Y-m-d\TH:m:s.u\0\0O');
 
-            $response->te = new \DateTime($response->te);
-            $response->te = (string) $response->te->format('Y-m-d\TH:m:s.u\0\0O');
-
+            $response->ts = (string) $response->ts;
+            $response->te = (string) $response->te;
             $params = [
                 'index' => 'tracking',
                 'type' => 'event',
                 'id' => $response->id,
                 'body' => $response
             ];
-
+            print_r($response);
             try {
                 $return = $this->storage->index($params);
             } catch(\Exception $e) {
