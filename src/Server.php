@@ -27,11 +27,12 @@ class Server {
         $this->provider = new \Redis();
         $this->provider->connect('127.0.0.1');
 
-        $this->storage = ClientBuilder::create()->setHosts(['127.0.0.1:9200'])->build();
+        $this->storage = ClientBuilder::create()->setHosts(['127.0.0.1:9200'])->setRetries(1)->build();
 
         $this->remaining = $this->provider->lLen('tracks');
 
         $this->loop = Factory::create();
+
     }
 
     public function run()
@@ -39,6 +40,7 @@ class Server {
 
         $app = new Api($this->loop, $this->provider, $this->storage);
         $app->listen();
+
 
         $this->loop->addPeriodicTimer(0.000001, function() {
             $this->store();
@@ -57,7 +59,11 @@ class Server {
                 'id' => $response->id,
                 'body' => $response
             ];
-            $return = $this->storage->index($params);
+            try {
+                $return = $this->storage->index($params);
+            } catch(\Exception $e) {
+                print $e->getMessage() . "\n";
+            }
         }
     }
 

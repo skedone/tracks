@@ -17,8 +17,12 @@ class Api {
 
         $http = new \React\Http\Server($this->socket);
         $http->on('request', function ($request, $response) {
-            $response->writeHead(200, array('Content-Type' => 'text/plain'));
-            $response->end($this->debug());
+            $response->writeHead(200, array('Content-Type' => 'application/javascript'));
+            $response->end(json_encode([
+                'status' => 200,
+                'queued' => $this->provider->lLen('tracks'),
+                'memory' => (memory_get_usage(true) / 1024)
+            ]));
         });
 
         return $this;
@@ -27,13 +31,5 @@ class Api {
     public function listen()
     {
         $this->socket->listen($this->port);
-    }
-
-    private function debug()
-    {
-        $current = $this->provider->lLen('tracks');
-        $return = (memory_get_usage(true) / 1024) . "kb  " . ($current - $this->remaining) . " ( $current ) \n";
-        $this->remaining = $this->provider->lLen('tracks');
-        return $return;
     }
 }
