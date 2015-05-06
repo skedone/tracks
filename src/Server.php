@@ -52,19 +52,23 @@ class Server {
     private function store()
     {
         $response = \json_decode($this->provider->lPop('tracks'));
+        $response->ts = new \DateTime($response->ts);
+        $response->ts = (string) $response->ts->format('Y-m-d\TH:m:s.u\0\0O');
+
+        $response->te = new \DateTime($response->te);
+        $response->te = (string) $response->te->format('Y-m-d\TH:m:s.u\0\0O');
+
         if($response) {
             $params = [
-                'index' => 'tracks',
+                'index' => 'tracking',
                 'type' => 'event',
                 'id' => $response->id,
                 'body' => $response
             ];
-            try {
-                $return = $this->storage->index($params);
-            } catch(\Exception $e) {
-                print $e->getMessage() . "\n";
-            }
+
+            $return = $this->storage->index($params);
         }
+        print_r($response);
     }
 
 }

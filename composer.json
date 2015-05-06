@@ -7,7 +7,6 @@
         }
     ],
     "require": {
-      "react/child-process": "0.4.*",
       "react/http": "0.4.*",
       "symfony/console": "v2.6.6",
       "elasticsearch/elasticsearch": "~2.0@beta",
