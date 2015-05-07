@@ -62,7 +62,6 @@ class Server {
                 'id' => $response->id,
                 'body' => $response
             ];
-            print_r($response);
             try {
                 $return = $this->storage->index($params);
             } catch(\Exception $e) {
