@@ -4,8 +4,11 @@ namespace Tracks;
 
 use Elasticsearch\Client;
 use Elasticsearch\ClientBuilder;
+use Elasticsearch\Common\Exceptions\BadRequest400Exception;
+use Elasticsearch\Common\Exceptions\NoNodesAvailableException;
 use React\EventLoop\Factory;
 use React\EventLoop\StreamSelectLoop;
+use React\EventLoop\Timer\Timer;
 use Tracks\Api\Api;
 
 class Server {
@@ -42,7 +45,7 @@ class Server {
         $app->listen();
 
 
-        $this->loop->addPeriodicTimer(0.000001, function() {
+        $this->loop->addPeriodicTimer(0.000001, function(Timer $timer) {
             $this->store();
         });
 
@@ -53,7 +56,6 @@ class Server {
     {
         $response = \json_decode($this->provider->lPop('tracks'));
         if($response) {
-
             $response->ts = (string) $response->ts;
             $response->te = (string) $response->te;
             $params = [
@@ -62,10 +64,14 @@ class Server {
                 'id' => $response->id,
                 'body' => $response
             ];
+
             try {
                 $return = $this->storage->index($params);
-            } catch(\Exception $e) {
-                print $e->getMessage() . "\n";
+            } catch(NoNodesAvailableException $e) {
+                $this->provider->rPush('tracks', \json_encode($response));
+                throw new \Exception("Elasticsearch went away..");
+            } catch(BadRequest400Exception $e) {
+                $this->provider->rPush('tracks.errors', \json_encode($response));
             }
         }
     }
