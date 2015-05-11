@@ -49,6 +49,10 @@ class Server {
             $this->store();
         });
 
+        $this->loop->addPeriodicTimer(1, function(){
+            echo "STATS " . (memory_get_usage(true) / 1024) . ' Kb' . PHP_EOL;
+        });
+
         $this->loop->run();
     }
 
