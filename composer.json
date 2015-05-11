@@ -11,8 +11,7 @@
       "symfony/console": "v2.6.6",
       "symfony/dependency-injection": "2.6.7",
       "symfony/config": "2.6.7",
-      "elasticsearch/elasticsearch": "~2.0@beta",
-      "predis/predis-async": "dev-master"
+      "elasticsearch/elasticsearch": "~2.0@beta"
     },
     "autoload": {
       "psr-4": {

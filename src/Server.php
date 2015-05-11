@@ -2,38 +2,32 @@
 
 namespace Tracks;
 
-use Elasticsearch\Client;
-use Elasticsearch\ClientBuilder;
-use Elasticsearch\Common\Exceptions\BadRequest400Exception;
-use Elasticsearch\Common\Exceptions\NoNodesAvailableException;
 use React\EventLoop\Factory;
 use React\EventLoop\StreamSelectLoop;
 use React\EventLoop\Timer\Timer;
+
 use Tracks\Api\Api;
+use Tracks\Provider\ProviderInterface;
+use Tracks\Storage\Exception\StorageFormatException;
+use Tracks\Storage\Exception\StorageUnavailableException;
+use Tracks\Storage\StorageInterface;
 
 class Server {
 
-    /** @var int */
-    private $remaining;
-
-    /** @var \Redis */
-    private $provider;
-
-    /** @var Client */
+    /** @var StorageInterface  */
     private $storage;
 
-    /** @var StreamSelectLoop */
+    /** @var ProviderInterface */
+    private $provider;
+
+    /** @var \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|StreamSelectLoop  */
     private $loop;
 
-    public function __construct()
+    public function __construct(ProviderInterface $providerInterface, StorageInterface $storageInterface)
     {
-        $this->provider = new \Redis();
-        $this->provider->connect('127.0.0.1');
-
-        $this->storage = ClientBuilder::create()->setHosts(['127.0.0.1:9200'])->setRetries(1)->build();
-
-        $this->remaining = $this->provider->lLen('tracks');
-
+        $this->storage = $storageInterface;
+        $this->provider = $providerInterface;
+        $this->remaining = $this->provider->count();
         $this->loop = Factory::create();
 
     }
@@ -46,7 +40,15 @@ class Server {
 
 
         $this->loop->addPeriodicTimer(0.000001, function(Timer $timer) {
-            $this->store();
+            $event = $this->provider->pop();
+            try {
+                $this->storage->store($event);
+            } catch(StorageFormatException $e) {
+                $this->provider->error($event);
+            } catch(StorageUnavailableException $e) {
+                $this->provider->error($event);
+                throw new \Exception("Storage went away.. sorry.");
+            }
         });
 
         $this->loop->addPeriodicTimer(1, function(){
@@ -54,30 +56,6 @@ class Server {
         });
 
         $this->loop->run();
-    }
-
-    private function store()
-    {
-        $response = \json_decode($this->provider->lPop('tracks'));
-        if($response) {
-            $response->ts = (string) $response->ts;
-            $response->te = (string) $response->te;
-            $params = [
-                'index' => 'tracking',
-                'type' => 'event',
-                'id' => $response->id,
-                'body' => $response
-            ];
-
-            try {
-                $return = $this->storage->index($params);
-            } catch(NoNodesAvailableException $e) {
-                $this->provider->rPush('tracks', \json_encode($response));
-                throw new \Exception("Elasticsearch went away..");
-            } catch(BadRequest400Exception $e) {
-                $this->provider->rPush('tracks.errors', \json_encode($response));
-            }
-        }
     }
 
 }

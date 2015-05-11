@@ -4,11 +4,11 @@ namespace Tracks\Provider;
 
 interface ProviderInterface {
 
-    public function push($data);
+    public function pop();
 
-    public function pop($data);
+    public function count();
 
-    public function count($data);
+    public function push(array $data);
 
     public function error($data);
 

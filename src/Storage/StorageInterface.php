@@ -4,6 +4,6 @@ namespace Tracks\Storage;
 
 interface StorageInterface {
 
-    public function store();
+    public function store($event);
 
 }
