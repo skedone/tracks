@@ -3,19 +3,34 @@
 <container xmlns="http://symfony.com/schema/dic/services"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="tracks.log">TRACKS</parameter>
+    </parameters>
+
     <services>
 
-        <service id="react.event-loop" class="React\EventLoop\Factory" />
-        <service id="tracks.provider.redis" class="Tracks\Provider\RedisProvider" />
-        <service id="tracks.storage.elasticsearch" class="Tracks\Storage\ElasticsearchStorage" />
+        <service id="react.event-loop" class="React\EventLoop\Factory"/>
+        <service id="tracks.provider.redis" class="Tracks\Provider\RedisProvider"/>
+        <service id="tracks.storage.elasticsearch" class="Tracks\Storage\ElasticsearchStorage"/>
+
         <service id="tracks.loop">
-            <factory service="react.event-loop" method="create" />
+            <factory service="react.event-loop" method="create"/>
+        </service>
+
+        <service id="monolog.handler.errorlog" class="Monolog\Handler\ErrorLogHandler" />
+        <service id="logger" class="Monolog\Logger">
+            <argument>%tracks.log%</argument>
+            <call method="pushHandler">
+                <argument type="service" id="monolog.handler.errorlog"/>
+            </call>
         </service>
 
         <service id="tracks.server" class="Tracks\Server">
-            <argument type="service" id="tracks.loop" />
-            <argument type="service" id="tracks.provider.redis" />
-            <argument type="service" id="tracks.storage.elasticsearch" />
+            <argument type="service" id="tracks.loop"/>
+            <argument type="service" id="tracks.provider.redis"/>
+            <argument type="service" id="tracks.storage.elasticsearch"/>
+            <argument type="service" id="logger"/>
         </service>
     </services>
 </container>

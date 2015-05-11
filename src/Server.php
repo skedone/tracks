@@ -2,6 +2,7 @@
 
 namespace Tracks;
 
+use Psr\Log\LoggerInterface;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
@@ -24,18 +25,31 @@ class Server {
     /** @var LoopInterface  */
     private $loop;
 
-    public function __construct(LoopInterface $loopInterface, ProviderInterface $providerInterface, StorageInterface $storageInterface)
+    /** @var LoggerInterface  */
+    private $logger;
+
+    /**
+     * @param LoopInterface $loopInterface
+     * @param ProviderInterface $providerInterface
+     * @param StorageInterface $storageInterface
+     * @param LoggerInterface $loggerInterface
+     */
+    public function __construct(
+        LoopInterface $loopInterface, ProviderInterface $providerInterface, StorageInterface $storageInterface,
+        LoggerInterface $loggerInterface
+    )
     {
         $this->storage = $storageInterface;
         $this->provider = $providerInterface;
         $this->remaining = $this->provider->count();
         $this->loop = $loopInterface;
-
+        $this->logger = $loggerInterface;
     }
 
     public function run()
     {
 
+        $this->logger->info('Started..');
         $app = new Api($this->loop, $this->provider, $this->storage);
         $app->listen();
 
@@ -52,8 +66,8 @@ class Server {
             }
         });
 
-        $this->loop->addPeriodicTimer(1, function(){
-            echo "STATS " . (memory_get_usage(true) / 1024) . ' Kb' . PHP_EOL;
+        $this->loop->addPeriodicTimer(10, function(){
+            $this->logger->debug('Memory usage ' . (memory_get_usage(true) / 1024) . 'Kb');
         });
 
         $this->loop->run();
