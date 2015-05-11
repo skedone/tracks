@@ -3,6 +3,7 @@
 namespace Tracks;
 
 use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
 use React\EventLoop\Timer\Timer;
 
@@ -20,15 +21,15 @@ class Server {
     /** @var ProviderInterface */
     private $provider;
 
-    /** @var \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|StreamSelectLoop  */
+    /** @var LoopInterface  */
     private $loop;
 
-    public function __construct(ProviderInterface $providerInterface, StorageInterface $storageInterface)
+    public function __construct(LoopInterface $loopInterface, ProviderInterface $providerInterface, StorageInterface $storageInterface)
     {
         $this->storage = $storageInterface;
         $this->provider = $providerInterface;
         $this->remaining = $this->provider->count();
-        $this->loop = Factory::create();
+        $this->loop = $loopInterface;
 
     }
 

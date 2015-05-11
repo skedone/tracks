@@ -5,10 +5,15 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
 
-        <service id="tracks.provider.redis" class="\Tracks\Provider\RedisProvider" />
-        <service id="tracks.storage.elasticsearch" class="\Tracks\Storage\ElasticsearchStorage" />
+        <service id="react.event-loop" class="React\EventLoop\Factory" />
+        <service id="tracks.provider.redis" class="Tracks\Provider\RedisProvider" />
+        <service id="tracks.storage.elasticsearch" class="Tracks\Storage\ElasticsearchStorage" />
+        <service id="tracks.loop">
+            <factory service="react.event-loop" method="create" />
+        </service>
 
-        <service id="tracks.server" class="\Tracks\Server">
+        <service id="tracks.server" class="Tracks\Server">
+            <argument type="service" id="tracks.loop" />
             <argument type="service" id="tracks.provider.redis" />
             <argument type="service" id="tracks.storage.elasticsearch" />
         </service>
