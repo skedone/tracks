@@ -5,14 +5,19 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="tracks.log">TRACKS</parameter>
+        <parameter key="log.key">TRACKS</parameter>
+        <parameter key="provider.class">Tracks\Provider\RedisProvider</parameter>
+        <parameter key="storage.class">Tracks\Storage\ElasticsearchStorage</parameter>
     </parameters>
 
     <services>
 
         <service id="react.event-loop" class="React\EventLoop\Factory"/>
-        <service id="tracks.provider.redis" class="Tracks\Provider\RedisProvider"/>
-        <service id="tracks.storage.elasticsearch" class="Tracks\Storage\ElasticsearchStorage"/>
+        <service id="tracks.provider" class="%provider.class%" />
+        <service id="tracks.storage" class="%storage.class%"/>
+        <service id="tracks.signals" class="Tracks\Signals">
+            <argument type="service" id="tracks.loop" />
+        </service>
 
         <service id="tracks.loop">
             <factory service="react.event-loop" method="create"/>
@@ -20,7 +25,7 @@
 
         <service id="monolog.handler.errorlog" class="Monolog\Handler\ErrorLogHandler" />
         <service id="logger" class="Monolog\Logger">
-            <argument>%tracks.log%</argument>
+            <argument>%log.key%</argument>
             <call method="pushHandler">
                 <argument type="service" id="monolog.handler.errorlog"/>
             </call>
@@ -28,9 +33,11 @@
 
         <service id="tracks.server" class="Tracks\Server">
             <argument type="service" id="tracks.loop"/>
-            <argument type="service" id="tracks.provider.redis"/>
-            <argument type="service" id="tracks.storage.elasticsearch"/>
+            <argument type="service" id="tracks.provider"/>
+            <argument type="service" id="tracks.storage"/>
             <argument type="service" id="logger"/>
+            <argument type="service" id="tracks.signals" />
         </service>
+
     </services>
 </container>

@@ -20,7 +20,7 @@ class Api {
             $response->writeHead(200, array('Content-Type' => 'application/javascript'));
             $response->end(json_encode([
                 'status' => 200,
-                'queued' => $this->provider->lLen('tracks'),
+                'queued' => $this->provider->count(),
                 'memory' => (memory_get_usage(true) / 1024)
             ]));
         });
