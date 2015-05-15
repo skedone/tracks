@@ -14,7 +14,6 @@ class ElasticsearchStorage implements StorageInterface {
 
     public function __construct()
     {
-        // $this->logger = $loggerInterface;
         $this->client = ClientBuilder::create()->setHosts(['127.0.0.1:9200'])->setRetries(1)->build();
     }
 

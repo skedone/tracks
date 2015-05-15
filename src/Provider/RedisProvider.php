@@ -2,9 +2,6 @@
 
 namespace Tracks\Provider;
 
-
-use Psr\Log\LoggerInterface;
-
 class RedisProvider implements ProviderInterface {
 
     private $key = 'tracks';

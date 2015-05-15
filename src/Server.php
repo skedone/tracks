@@ -6,12 +6,15 @@ use Psr\Log\LoggerInterface;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\Timer;
 
-use Tracks\Api\Api;
 use Tracks\Provider\ProviderInterface;
 use Tracks\Storage\Exception\StorageFormatException;
 use Tracks\Storage\Exception\StorageUnavailableException;
 use Tracks\Storage\StorageInterface;
 
+/**
+ * Class Server
+ * @package Tracks
+ */
 class Server {
 
     /** @var StorageInterface  */
@@ -31,6 +34,7 @@ class Server {
 
     /** @var bool */
     private $isStoppable = FALSE;
+
      /** @var bool */
     private $isStopped = FALSE;
 
@@ -39,6 +43,7 @@ class Server {
      * @param ProviderInterface $providerInterface
      * @param StorageInterface $storageInterface
      * @param LoggerInterface $loggerInterface
+     * @param Signals $signals
      */
     public function __construct(
         LoopInterface $loopInterface, ProviderInterface $providerInterface,
@@ -78,15 +83,13 @@ class Server {
 
     public function start()
     {
-        $app = new Api($this->loop, $this->provider, $this->storage);
-        $app->listen();
-
         $this->logger->info('Server started correctly.');
 
         $this->loop->addPeriodicTimer(0.000001, function(Timer $timer) {
             if($this->isStoppable) {
                 $this->logger->info('Do not store anymore.');
                 $this->isStopped = TRUE;
+                return;
             }
 
             $this->storeEvent();

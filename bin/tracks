@@ -3,9 +3,9 @@
 
 set_time_limit(0);
 
-require_once __DIR__.'/../vendor/autoload.php';
-
 use Symfony\Component\Console\Application;
+
+require_once __DIR__.'/../vendor/autoload.php';
 
 $app = new Application('Tracks Server', 'v0.1');
 $app->add(new \Tracks\Command\ServerCommand());
