@@ -7,3 +7,4 @@ vendor/
 
 dump.rdb
 .idea/
+tests/_output/*

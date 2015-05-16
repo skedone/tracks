@@ -20,6 +20,7 @@ class ElasticsearchStorage implements StorageInterface {
     public function store($event)
     {
         $response = $event;
+
         if($response) {
             $response->ts = (string) $response->ts;
             $response->te = (string) $response->te;
